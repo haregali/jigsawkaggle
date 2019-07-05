@@ -13,8 +13,6 @@ EMBEDDING_FILES = [
 ]
 NUM_MODELS = 2
 BATCH_SIZE = 512
-LSTM_UNITS = 128
-DENSE_HIDDEN_UNITS = 4 * LSTM_UNITS
 EPOCHS = 4
 MAX_LEN = 220
 IDENTITY_COLUMNS = [
@@ -42,15 +40,15 @@ def build_model(embedding_matrix, num_aux_targets):
     words = Input(shape=(None,))
     x = Embedding(*embedding_matrix.shape, weights=[embedding_matrix], trainable=False)(words)
     x = SpatialDropout1D(0.2)(x)
-    x = Bidirectional(CuDNNLSTM(LSTM_UNITS, return_sequences=True))(x)
-    x = Bidirectional(CuDNNLSTM(LSTM_UNITS, return_sequences=True))(x)
+    x = Bidirectional(CuDNNLSTM(128, return_sequences=True))(x)
+    x = Bidirectional(CuDNNLSTM(128, return_sequences=True))(x)
 
     hidden = concatenate([
         GlobalMaxPooling1D()(x),
         GlobalAveragePooling1D()(x),
     ])
-    hidden = add([hidden, Dense(DENSE_HIDDEN_UNITS, activation='relu')(hidden)])
-    hidden = add([hidden, Dense(DENSE_HIDDEN_UNITS, activation='relu')(hidden)])
+    hidden = add([hidden, Dense(512, activation='relu')(hidden)])
+    hidden = add([hidden, Dense(512, activation='relu')(hidden)])
     result = Dense(1, activation='sigmoid')(hidden)
     aux_result = Dense(num_aux_targets, activation='sigmoid')(hidden)
     
